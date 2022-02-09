@@ -27,9 +27,6 @@ func main() {
 
 		branch(0, FIRST_BRANCH_HEIGHT, WIN_WIDTH/2, WIN_HEIGHT, int32(angle), renderer)
 		renderer.Present()
-		//angle++
-
-		//window.UpdateSurface()
 	}
 }
 
