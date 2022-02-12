@@ -2,6 +2,7 @@ package main
 
 import (
 	"math"
+	"time"
 
 	"github.com/veandco/go-sdl2/gfx"
 	"github.com/veandco/go-sdl2/sdl"
@@ -24,9 +25,12 @@ func main() {
 	changeAngle := int32(0)
 	done := false
 	renderer.SetDrawBlendMode(sdl.BLENDMODE_BLEND)
+	renderer.SetDrawColor(0x00, 0x00, 0x00, 0xFF)
+	renderer.Clear()
 	for !done {
-		renderer.SetDrawColor(0xF, 0xF, 0xF, 0x0F)
-		renderer.FillRect(&sdl.Rect{X: 0, Y: 0, W: WIN_WIDTH, H: WIN_HEIGHT})
+		frameStartTime := time.Now()
+
+		//renderer.FillRect(&sdl.Rect{X: 0, Y: 0, W: WIN_WIDTH, H: WIN_HEIGHT})
 		branch(0, FIRST_BRANCH_HEIGHT, WIN_WIDTH/2, WIN_HEIGHT, 0, changeAngle, 2, renderer)
 		renderer.Present()
 		changeAngle++
@@ -36,6 +40,13 @@ func main() {
 				done = true
 			}
 		}
+		frameEndTime := time.Now()
+		frameElapsedTime := frameEndTime.Sub(frameStartTime)
+		frameDesiredTime, err := time.ParseDuration("16ms")
+		if err != nil {
+			return
+		}
+		time.Sleep(frameDesiredTime - frameElapsedTime)
 	}
 }
 
@@ -48,12 +59,19 @@ func branch(depth, size, x, y, angle, angleInc int32, numberOfBranches int, rend
 	finalY := offsetY + float64(y)
 	r, g, b := uint8(0xF0), uint8(0xF6), uint8(0xF0)
 
-	gfx.ThickLineRGBA(renderer, x, y, int32(finalX), int32(finalY), 4, r, g, b, 0x0f)
-	for i := -numberOfBranches / 2; i <= numberOfBranches/2; i++ {
-		if i != 0 {
+	gfx.ThickLineRGBA(renderer, x, y, int32(finalX), int32(finalY), 4, r, g, b, 0x01)
+	if numberOfBranches%2 == 0 {
+		for i := -numberOfBranches / 2; i <= numberOfBranches/2; i++ {
+			if i != 0 {
+				branch(depth+1, int32(float32(size)*0.67), int32(finalX), int32(finalY), angle+angleInc*int32(i), angleInc, numberOfBranches, renderer)
+			}
+		}
+	} else {
+		for i := -numberOfBranches / 2; i <= numberOfBranches/2; i++ {
 			branch(depth+1, int32(float32(size)*0.67), int32(finalX), int32(finalY), angle+angleInc*int32(i), angleInc, numberOfBranches, renderer)
 		}
 	}
+
 }
 
 func rotatePos(x, y, angle float64) (newX, newY float64) {
